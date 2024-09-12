@@ -1,5 +1,6 @@
 # gRPC, gRPC-Gateway, gRPC-Web, Vue3, Vite, Typescript Example
-
+## golang echo/v4 적용
+- 
 - Windows 11 기반 개발 환경
 - gRPC 서버 및 클라이언트 구현 (50011)
 - gRPC-Gateway 서버 구현 (8080)
@@ -103,7 +104,7 @@ git clone https://github.com/googleapis/googleapis.git
 ```shell
 npm install @protobuf-ts/plugin
 protoc --proto_path=. --proto_path=./googleapis --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --grpc-gateway_out=. --grpc-gateway_opt=paths=source_relative proto/service.proto
-mkdir -P ./frontend/src/backend/gRPC
+mkdir -P ../frontend/src/backend/gRPC
 npx protoc --ts_out ../frontend/src/backend/gRPC --proto_path=proto --proto_path=./googleapis proto/service.proto
 ```
 

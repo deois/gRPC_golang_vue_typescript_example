@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/rs/cors"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
@@ -36,7 +36,7 @@ func (s *server) StreamTime(req *pb.TimeRequest, stream pb.MyService_StreamTimeS
 				return err
 			}
 			time.Sleep(1 * time.Second)
-			fmt.Println("StreamTime", currentTime)
+			fmt.Println("StreamTime")
 		}
 	}
 }
@@ -64,34 +64,33 @@ func startGRPCServer() *grpc.Server {
 }
 
 func startHTTPServer(grpcServer *grpc.Server) {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	e := echo.New()
 
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	err := pb.RegisterMyServiceHandlerFromEndpoint(ctx, mux, "localhost:50051", opts)
-	if err != nil {
-		log.Fatalf("Failed to start HTTP server: %v", err)
-	}
+	// 미들웨어 설정
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE, echo.OPTIONS},
+		AllowHeaders: []string{"*"},
+	}))
 
+	// gRPC 핸들러 설정
 	wrappedGrpc := grpcweb.WrapServer(grpcServer, grpcweb.WithOriginFunc(func(origin string) bool {
 		log.Printf("Received request with origin: %s", origin)
 		return true // Allow all origins for testing
 	}))
 
-	corsHandler := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"}, // Allow all origins for testing
-		//AllowedOrigins: []string{"http://localhost:5173"},
-		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders: []string{"*"}, // Allow all headers for testing
-		//AllowedHeaders:   []string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization"},
-		ExposedHeaders:   []string{"Access-Control-Allow-Origin"},
-		AllowCredentials: true,
-		MaxAge:           300,
-	}).Handler(http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
-		log.Printf("Received request: %s %s", req.Method, req.URL.Path)
-		log.Printf("Request headers: %v", req.Header)
+	// Define and initialize mux
+	mux := runtime.NewServeMux()
+	err := pb.RegisterMyServiceHandlerServer(context.Background(), mux, &server{})
+	if err != nil {
+		log.Fatalf("Failed to register gRPC handler: %v", err)
+	}
+
+	e.Any("/*", func(c echo.Context) error {
+		req := c.Request()
+		resp := c.Response()
 
 		if wrappedGrpc.IsGrpcWebRequest(req) {
 			log.Println("Handling as gRPC-Web request")
@@ -101,16 +100,12 @@ func startHTTPServer(grpcServer *grpc.Server) {
 			mux.ServeHTTP(resp, req)
 		}
 
-		log.Printf("Response headers: %v", resp.Header())
-	}))
+		return nil
+	})
 
-	httpServer := &http.Server{
-		Addr:    ":8080",
-		Handler: corsHandler,
-	}
-
+	// HTTP 서버 시작
 	log.Println("HTTP server listening on :8080")
-	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := e.Start(":8080"); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 }
