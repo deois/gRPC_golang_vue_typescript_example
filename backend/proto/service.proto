@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "backend/proto";
+
+import "google/api/annotations.proto";
+
+service MyService {
+  rpc SayHello (HelloRequest) returns (HelloResponse) {
+    option (google.api.http) = {
+      post: "/v1/sayhello"
+      body: "*"
+    };
+  }
+  rpc StreamTime (TimeRequest) returns (stream TimeResponse) {
+    option (google.api.http) = {
+      post: "/v1/streamtime"
+      body: "*"
+    };
+  }
+}
+
+message TimeRequest {}
+
+message TimeResponse {
+  string current_time = 1;
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloResponse {
+  string message = 1;
+}
