@@ -8,32 +8,33 @@
 - Implementation of Vue3, Vite, Typescript frontend
 - Integrated execution of gRPC server, gRPC-Gateway server, gRPC-Web client, and Vue3 frontend
 
-## 동작 예시
+## Operation Example
 
-### golang gRPC 서버
+### golang gRPC server
 - Implementation of SayHello RPC method in MyService
   - SayHello: When String is requested, responds with "Hello" + String
   - StreamTime: When requested, responds with current time at 1-second intervals
 
-### golang gRPC 클라이언트
+### golang gRPC client
 - Calling SayHello RPC method in MyService
   - When requesting "World", responds with "Hello World"
   - When requesting "Gopher", responds with "Hello Gopher"
 
-### vue3 프론트엔드
+### vue3 frontend
 - Request to gRPC server through gRPC-Web client from typescript frontend
   - When requesting sayHello "World", outputs "Hello World" to debug console
   - When requesting streamTime, outputs current time to debug console at 1-second intervals
 
 
-## protoc 설치 (windows 11)
+## Installing protoc 
+### using binary (windows 11) 
 
 - Download win64 binary from https://github.com/protocolbuffers/protobuf/releases
 - ex, https://github.com/protocolbuffers/protobuf/releases/download/v28.1/protoc-28.1-win64.zip
 - Set PATH for protoc executable
 - Verify protoc --version
 
-### Check version after running protoc
+#### Check version after running protoc
 ```shell
 protoc --version
 ```
