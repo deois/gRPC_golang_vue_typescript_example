@@ -1,39 +1,39 @@
 # gRPC, gRPC-Gateway, gRPC-Web, Vue3, Vite, Typescript Example
 
-- Windows 11 기반 개발 환경
-- gRPC 서버 및 클라이언트 구현 (50011)
-- gRPC-Gateway 서버 구현 (8080)
-- gRPC-Reflection 서버 구현 (50051)
-- gRPC-Web 클라이언트 구현 
-- Vue3, Vite, Typescript 프론트엔드 구현
-- gRPC 서버, gRPC-Gateway 서버, gRPC-Web 클라이언트, Vue3 프론트엔드를 통합하여 실행
+- Development environment based on Windows 11
+- Implementation of gRPC server and client (50011)
+- Implementation of gRPC-Gateway server (8080)
+- Implementation of gRPC-Reflection server (50051)
+- Implementation of gRPC-Web client
+- Implementation of Vue3, Vite, Typescript frontend
+- Integrated execution of gRPC server, gRPC-Gateway server, gRPC-Web client, and Vue3 frontend
 
 ## 동작 예시
 
 ### golang gRPC 서버
-- MyService 내에 SayHello RPC 메서드 구현
-  - SayHello : String 요청 시, "Hello" + String 응답
-  - StreamTime : 요청 시, 현재 시간을 1초 간격으로 응답
+- Implementation of SayHello RPC method in MyService
+  - SayHello: When String is requested, responds with "Hello" + String
+  - StreamTime: When requested, responds with current time at 1-second intervals
 
 ### golang gRPC 클라이언트
-- MyService 내에 SayHello RPC 메서드 호출
-  - "World" 요청 시, "Hello World" 응답
-  - "Gopher" 요청 시, "Hello Gopher" 응답
+- Calling SayHello RPC method in MyService
+  - When requesting "World", responds with "Hello World"
+  - When requesting "Gopher", responds with "Hello Gopher"
 
 ### vue3 프론트엔드
-- typescript 프론트엔드에서 gRPC-Web 클라이언트를 통해 gRPC 서버에 요청 
-  - sayHello "World" 요청 시, 디버그 콘솔에 "Hello World" 출력
-  - streamTime 요청 시, 현재 시간을 1초 간격으로 디버그 콘솔에 출력
+- Request to gRPC server through gRPC-Web client from typescript frontend
+  - When requesting sayHello "World", outputs "Hello World" to debug console
+  - When requesting streamTime, outputs current time to debug console at 1-second intervals
 
 
 ## protoc 설치 (windows 11)
 
-- https://github.com/protocolbuffers/protobuf/releases 에서 win64 바이너리 다운로드
+- Download win64 binary from https://github.com/protocolbuffers/protobuf/releases
 - ex, https://github.com/protocolbuffers/protobuf/releases/download/v28.1/protoc-28.1-win64.zip
-- protoc 실행파일 PATH 설정
-- protoc --version 확인
+- Set PATH for protoc executable
+- Verify protoc --version
 
-### protoc 실행 후 버전 확인
+### Check version after running protoc
 ```shell
 protoc --version
 ```
@@ -42,9 +42,11 @@ protoc --version
 libprotoc 28.1
 ```
 
-## proto 코드 작성
+## Writing proto code
 
+```
 mkdir -p backend/proto
+```
 
 ```backend/proto/service.proto
 syntax = "proto3";
@@ -85,10 +87,10 @@ message HelloResponse {
 }
 ```
 
-## golang gRPC 서버 및 golang gRPC 클라이언트
+## golang gRPC server and golang gRPC client
 
 
-### 준비
+### Preparation
 ```shell
 cd backend
 go mod init backend
@@ -99,7 +101,7 @@ go get -u github.com/improbable-eng/grpc-web/go/grpcweb
 git clone https://github.com/googleapis/googleapis.git
 ```
 
-### proto 파일을 go 파일, typescript 파일로 변환
+### Converting proto files to go files and typescript files
 ```shell
 npm install @protobuf-ts/plugin
 protoc --proto_path=. --proto_path=./googleapis --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative --grpc-gateway_out=. --grpc-gateway_opt=paths=source_relative proto/service.proto
@@ -107,13 +109,13 @@ mkdir -P ./frontend/src/backend/gRPC
 npx protoc --ts_out ../frontend/src/backend/gRPC --proto_path=proto --proto_path=./googleapis proto/service.proto
 ```
 
-#### golang 서버 실행
+#### Running golang server
 
 ``` shell
 go run server.go
 ```
 
-### golang 클라이언트 실행
+### Running golang client
 
 ```shell
 go run client.go
